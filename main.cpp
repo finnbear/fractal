@@ -74,13 +74,10 @@ class Fractal {
 			double jy = ix;
 		
 			for (int i = 0; i < _pattern.size(); i++) {
-				double scale = 1/3;
+				double scale = 0.25;
 				// Compute resulting point
 				double x = _pattern[i]->x() + scale * (_pattern[i]->x() * ix + _pattern[i]->y() * iy);
 				double y = _pattern[i]->y() + scale * (_pattern[i]->y() * ix + _pattern[i]->x() * iy);
-				
-				//double x = _pattern[i]->x() * ix + _pattern[i]->y() * jx;
-				//double y = _pattern[i]->x() * iy + _pattern[i]->y() * jy;
 
 				Point* point = new Point(x, y);
 
@@ -136,7 +133,24 @@ class Fractal {
 		}
 };
 
-int render(char* fileName, int resolution) {
+int render(Fractal* fractal, char* fileName, int resolution) {
+	// Sample fractal
+	int samples[resolution][resolution] = {0};
+	
+	double step = (double)1 / resolution;
+	
+	for (double t = 0; t <= 1; t += 0.1) {
+		// Sample a point on the fractal
+		Point* sample = fractal->sample(t, 1);
+		
+		// Compute array indices
+		int x = round(lerp(sample->x(), 0, 4, 0, resolution));
+		int y = round(lerp(sample->y(), 0, 4, 0, resolution));
+		
+		// Write to array
+		samples[x][y] = 1;
+	}
+	
 	// Declare a new output file stream
 	ofstream image(fileName);
 	
@@ -149,9 +163,9 @@ int render(char* fileName, int resolution) {
 	for (int y = 0; y < resolution; y++) {
 		for (int x = 0; x < resolution; x++) {
 			// Calculate color values
-			int r = x % 255;
-			int g = y % 255;
-			int b = y + x % 255;
+			int r = samples[x][y] * 255;
+			int g = samples[x][y] * 255;
+			int b = samples[x][y] * 255;
 			
 			// Write color values to image
 			image << r << " " << g << " " << b << endl;
@@ -173,12 +187,8 @@ int main() {
 	pattern.push_back(new Point(3, 0));
 	
 	Fractal* fractal = new Fractal(pattern);
-
-	for (double i = 0; i < 1; i += 0.1) {
-		Point* point = fractal->sample(i, 1);
-		cout << i << ": " << point->x() << ", " << point->y() << endl;
-	}
-	render("output.ppm", 256);
+	
+	render(fractal, "output.ppm", 128);
 
 	system("eog output.ppm");
 
