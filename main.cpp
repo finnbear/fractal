@@ -12,7 +12,11 @@ double dist(double x1, double y1, double x2, double y2) {
 }
 
 double lerp(double value, double leftMin, double leftMax, double rightMin, double rightMax) {
-	return rightMin + (rightMax - rightMin) * (value - leftMin) / (leftMax - leftMin);
+	//if (leftMin == leftMax) {
+		
+	//} else {
+		return rightMin + (rightMax - rightMin) * (value - leftMin) / (leftMax - leftMin);
+	//}
 }
 
 class Point {
@@ -51,6 +55,7 @@ class Fractal {
 			Point* end1 = _pattern[_pattern.size() - 1];
 			
 			for (int i = 0; i < _pattern.size(); i++) {
+				// TODO: Must add trigonometry for slanted fractal segments
 				double x = lerp(_pattern[i]->x(), start1->x(), end1->x(), start2->x(), end2->x());
 				double y = lerp(_pattern[i]->y(), start1->y(), end1->y(), start2->y(), end2->y());
 
@@ -142,8 +147,9 @@ int main() {
 	
 	Fractal* fractal = new Fractal(pattern);
 	
-	cout << fractal->sample(0, 1)->x() << endl;
-
+	for (float i = 0; i < 1; i += 0.1) {
+		cout << fractal->sample(i, 1)->y() << endl;
+	}
 	render("output.ppm", 256);
 
 	system("eog output.ppm");
