@@ -50,14 +50,37 @@ class Fractal {
 	
 		Fractal* cast(Point* start2, Point* end2) {
 			vector<Point*> pattern;
-			
+		
 			Point* start1 = _pattern[0];
 			Point* end1 = _pattern[_pattern.size() - 1];
+	
+			// Calculate angles between start and end points			
+			double angle1 = atan2(start1->y() - end1->y(), start1->x() - end1->x());
+			double angle2 = atan2(start2->y() - end2->y(), start2->x() - end2->x());
+
+			double angle = angle2 - angle1;
+		
+			// Compute first unit vector
+			double ix = cos(angle);
+			double iy = sin(angle);
 			
+			// Normalize first unit vector
+			double imag = sqrt(pow(ix, 2) + pow(iy, 2));
+			ix /= imag;
+			iy /= imag;
+			
+			// Copy to second unit vector
+			double jx = iy;
+			double jy = ix;
+		
 			for (int i = 0; i < _pattern.size(); i++) {
-				// TODO: Must add trigonometry for slanted fractal segments
-				double x = lerp(_pattern[i]->x(), start1->x(), end1->x(), start2->x(), end2->x());
-				double y = lerp(_pattern[i]->y(), start1->y(), end1->y(), start2->y(), end2->y());
+				double scale = 1/3;
+				// Compute resulting point
+				double x = _pattern[i]->x() + scale * (_pattern[i]->x() * ix + _pattern[i]->y() * iy);
+				double y = _pattern[i]->y() + scale * (_pattern[i]->y() * ix + _pattern[i]->x() * iy);
+				
+				//double x = _pattern[i]->x() * ix + _pattern[i]->y() * jx;
+				//double y = _pattern[i]->x() * iy + _pattern[i]->y() * jy;
 
 				Point* point = new Point(x, y);
 
@@ -78,20 +101,24 @@ class Fractal {
 			} else {
 				double totalTraversal = t * length();
 				double traversal = 0;
+				
 				int i;
-			
+
 				for (i = 0; i < _pattern.size() - 1; i++) {
-					if (traversal >= totalTraversal) {
+					if (traversal > totalTraversal) {
 						break;
+					} else if (traversal == totalTraversal) {
+						// If the value falls on a point, return it
+						return _pattern[i];
 					}
-			
+		
 					traversal += Point::distance(_pattern[i], _pattern[i + 1]);
 				}
 				
-				Fractal* subFractal = cast(_pattern[i], _pattern[i + 1]);
+				Fractal* subFractal = cast(_pattern[i - 1], _pattern[i]);
 				
-				double subT = lerp(traversal - totalTraversal, 0, Point::distance(_pattern[i], _pattern[i + 1]), 0, 1);
-			
+				double subT = lerp(traversal - totalTraversal, 0, Point::distance(_pattern[i - 1], _pattern[i]), 0, 1);
+
 				return subFractal->sample(subT, depth - 1);
 			}
 		}
@@ -146,9 +173,10 @@ int main() {
 	pattern.push_back(new Point(3, 0));
 	
 	Fractal* fractal = new Fractal(pattern);
-	
-	for (float i = 0; i < 1; i += 0.1) {
-		cout << fractal->sample(i, 1)->y() << endl;
+
+	for (double i = 0; i < 1; i += 0.1) {
+		Point* point = fractal->sample(i, 1);
+		cout << i << ": " << point->x() << ", " << point->y() << endl;
 	}
 	render("output.ppm", 256);
 
