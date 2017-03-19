@@ -51,22 +51,21 @@ class Fractal {
 			Point* end1 = _pattern[_pattern.size() - 1];
 			
 			for (int i = 0; i < _pattern.size(); i++) {
-				double x = lerp(_pattern[i]->y(), start1->x(), end1->x(), start2->x(), end2->x());
+				double x = lerp(_pattern[i]->x(), start1->x(), end1->x(), start2->x(), end2->x());
 				double y = lerp(_pattern[i]->y(), start1->y(), end1->y(), start2->y(), end2->y());
 
 				Point* point = new Point(x, y);
 
 				pattern.push_back(point);
 			}
-			
+		
 			return new Fractal(pattern);
 		}
 	
 		Point* sample(double t, int depth) {
-			if (depth == 0) {
+			if (depth <= 0) {
 				Point start = *_pattern[0];
 				Point end = *_pattern[_pattern.size() - 1];
-				
 				double x = lerp(t, 0, 1, start.x(), end.x());
 				double y = lerp(t, 0, 1, start.y(), end.y());
 				
@@ -74,19 +73,18 @@ class Fractal {
 			} else {
 				double totalTraversal = t * length();
 				double traversal = 0;
-			
 				int i;
 			
 				for (i = 0; i < _pattern.size() - 1; i++) {
 					if (traversal >= totalTraversal) {
-						i--;
 						break;
 					}
 			
 					traversal += Point::distance(_pattern[i], _pattern[i + 1]);
 				}
-			
+				
 				Fractal* subFractal = cast(_pattern[i], _pattern[i + 1]);
+				
 				double subT = lerp(traversal - totalTraversal, 0, Point::distance(_pattern[i], _pattern[i + 1]), 0, 1);
 			
 				return subFractal->sample(subT, depth - 1);
@@ -133,6 +131,19 @@ int render(char* fileName, int resolution) {
 }
 
 int main() {
+	vector<Point*> pattern;
+	
+	pattern.push_back(new Point(0, 0));
+	pattern.push_back(new Point(1, 0));
+	pattern.push_back(new Point(1, 1));
+	pattern.push_back(new Point(2, 1));
+	pattern.push_back(new Point(2, 0));
+	pattern.push_back(new Point(3, 0));
+	
+	Fractal* fractal = new Fractal(pattern);
+	
+	cout << fractal->sample(0, 1)->x() << endl;
+
 	render("output.ppm", 256);
 
 	system("eog output.ppm");
