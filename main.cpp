@@ -139,16 +139,26 @@ int render(Fractal* fractal, char* fileName, int resolution) {
 	
 	double step = (double)1 / resolution;
 	
-	for (double t = 0; t <= 1; t += 0.1) {
+	for (double t = 0; t <= 1; t += 0.2) {
 		// Sample a point on the fractal
 		Point* sample = fractal->sample(t, 1);
 		
+		cout << sample->x() << ", " << sample->y() << endl;
+		
 		// Compute array indices
-		int x = round(lerp(sample->x(), 0, 4, 0, resolution));
-		int y = round(lerp(sample->y(), 0, 4, 0, resolution));
+		int x = round(lerp(sample->x(), -1, 4, 0, resolution));
+		int y = 256 - round(lerp(sample->y(), -1, 4, 0, resolution));
 		
 		// Write to array
 		samples[x][y] = 1;
+		samples[x-1][y] = 1;
+		samples[x-1][y-1] = 1;
+		samples[x][y-1] = 1;
+		samples[x+1][y] = 1;
+		samples[x+1][y+1] = 1;
+		samples[x][y+1] = 1;
+		samples[x-1][y+1] = 1;
+		samples[x+1][y-1] = 1;
 	}
 	
 	// Declare a new output file stream
